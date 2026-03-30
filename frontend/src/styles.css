@@ -1,0 +1,261 @@
+/* =========================================================
+   TYPIST — terminal CRT aesthetic. Black + white only.
+   ========================================================= */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: #000;
+  color: #fff;
+  font-family: 'Courier New', Courier, 'Lucida Console', Monaco, monospace;
+  font-size: 18px;
+  line-height: 1;
+  overflow: hidden;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+/* Subtle CRT scanlines */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.10) 2px,
+    rgba(0, 0, 0, 0.10) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ---- App root ---- */
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#physics-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+#ui {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ---- Cylinder scene ---- */
+
+#cylinder-scene {
+  /* Anchored left of center so corkscrew grows right into open space */
+  position: absolute;
+  top: 67%;
+  left: 55%;
+  width: 0;
+  height: 0;
+  perspective: 700px;
+  perspective-origin: 50% 50%;
+}
+
+/* Group div — positions word anchor on the helix (translateY + rotateY only, no translateZ) */
+.cy-group {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  /* transition set by JS after init */
+}
+
+/* Individual letter span for non-current words — each has its own rotateY to curve around cylinder */
+.cy-letter {
+  position: absolute;
+  top: -0.55em;
+  left: 0;
+  white-space: nowrap;
+  font-size: 18px;
+}
+
+/* Current (active) word — flat single span with typed-state highlighting */
+.cy-slot.current {
+  position: absolute;
+  top: -0.55em;
+  left: 0;
+  white-space: nowrap;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  color: #fff;
+  opacity: 1;
+}
+
+/* ---- Word state spans ---- */
+
+.w-ok  { opacity: 1; }
+.w-rem { opacity: 0.45; }
+
+.w-err {
+  background: #fff;
+  color: #000;
+}
+
+/* Cursor: blinking underline on the current character */
+.w-cur-char {
+  position: relative;
+  opacity: 1;
+}
+.w-cur-char::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #fff;
+  animation: blink 0.85s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ---- Stats panel (top-left — leaves right side open for corkscrew) ---- */
+
+#stats-panel {
+  position: absolute;
+  top: 36px;
+  left: 24px;
+  white-space: pre;
+  font-size: 14px;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* ---- ASCII truck ---- */
+
+#truck {
+  position: fixed;
+  bottom: 0;
+  white-space: pre;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 4px;
+  line-height: 4px;
+  color: #fff;
+  pointer-events: none;
+  z-index: 10;
+  transform: scaleX(-1);
+}
+
+/* ---- Splash ---- */
+
+#splash {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.splash-inner {
+  max-width: 560px;
+  padding: 0 24px;
+}
+
+.splash-title {
+  font-size: 52px;
+  letter-spacing: 0.2em;
+  margin-bottom: 40px;
+}
+
+.splash-prompt {
+  font-size: 20px;
+  margin-bottom: 20px;
+  letter-spacing: 0.06em;
+}
+
+.splash-hint {
+  font-size: 13px;
+  opacity: 0.38;
+  letter-spacing: 0.05em;
+}
+
+.blink {
+  animation: blink 0.85s step-end infinite;
+}
+
+/* ---- Settings panel ---- */
+
+#settings-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  white-space: pre;
+  font-size: 15px;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  background: #000;
+  color: #fff;
+  border: none;
+  z-index: 200;
+  pointer-events: auto;
+}
+
+/* ---- Results panel ---- */
+
+#results-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  white-space: pre;
+  font-size: 15px;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  background: #000;
+  color: #fff;
+  border: none;
+  z-index: 200;
+  pointer-events: auto;
+}
+
+/* Inline name input embedded within the results <pre> */
+#results-panel .rni {
+  display: inline;
+  background: transparent;
+  color: #fff;
+  border: none;
+  border-bottom: 1px solid #666;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  line-height: inherit;
+  outline: none;
+  caret-color: #fff;
+  width: 20ch;
+  vertical-align: baseline;
+  padding: 0;
+}
+
+#results-panel .rni::placeholder {
+  color: #444;
+}

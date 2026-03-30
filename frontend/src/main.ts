@@ -164,12 +164,12 @@ function handleKey(e: KeyboardEvent) {
     stats.recordChar(correct)
 
     if (!correct) {
-      // Spawn the mistyped character as a dim red physics particle
-      const el   = document.querySelector('.cy-slot.current') as HTMLElement | null
-      const rect = el?.getBoundingClientRect()
-      if (rect) {
-        physics.spawnChar(e.key, rect.left + rect.width / 2, rect.top + rect.height / 2, '#c33')
-      }
+      // Spawn the mistyped character as a dim red physics particle.
+      // Use the cylinder scene's CSS anchor (top:67% left:55%) since the
+      // current word's 3D-transformed element doesn't give a reliable rect.
+      const ox = window.innerWidth  * 0.55
+      const oy = window.innerHeight * 0.67
+      physics.spawnChar(e.key, ox, oy, '#c33')
     }
 
     syncCylinder()

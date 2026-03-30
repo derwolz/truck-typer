@@ -213,19 +213,23 @@ export class Results {
       he(top),
       he(row(`  1-MIN · ${modeLabel}`)),
       he(mid),
-      he(row(`  WPM       ${String(wpm).padStart(4)}`)),
-      he(row(`  ACCURACY  ${String(accuracy).padStart(3)}%`)),
-      he(mid),
     ]
 
     if (!submitted) {
-      // Embed a real <input> for the name, inline within the pre
+      // Embed a real <input> for the name, inline within the pre.
+      // Box interior is W=30 chars: "  NAME: " (8) + input (20ch) + "  " (2) = 30
       const safeVal = he(this._name)
       lines.push(
-        `║  NAME: <input id="rni" class="rni" type="text" value="${safeVal}" maxlength="16" autocomplete="off" spellcheck="false" placeholder="your name">║`
+        `║  NAME: <input id="rni" class="rni" type="text" value="${safeVal}" maxlength="16" autocomplete="off" spellcheck="false" placeholder="your name">  ║`
       )
       lines.push(he(mid))
     }
+
+    lines.push(
+      he(row(`  WPM       ${String(wpm).padStart(4)}`)),
+      he(row(`  ACCURACY  ${String(accuracy).padStart(3)}%`)),
+      he(mid),
+    )
 
     // Personal best
     lines.push(he(row(`  PERSONAL BEST · ${modeLabel}`)))

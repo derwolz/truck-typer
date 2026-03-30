@@ -2,7 +2,6 @@ package words
 
 import (
 	"math/rand"
-	"strings"
 )
 
 var sentencePool = []string{
@@ -58,13 +57,11 @@ var sentencePool = []string{
 	"Try not to become a person of success, but rather a person of genuine value.",
 }
 
-// RandomSentenceWords returns n words drawn from random sentences, preserving
-// the original capitalization and punctuation of each sentence exactly.
-func RandomSentenceWords(n int) []string {
-	var result []string
-	for len(result) < n {
-		s := sentencePool[rand.Intn(len(sentencePool))]
-		result = append(result, strings.Fields(s)...)
+// RandomSentences returns n random sentences from the pool.
+func RandomSentences(n int) []string {
+	result := make([]string, n)
+	for i := range result {
+		result[i] = sentencePool[rand.Intn(len(sentencePool))]
 	}
-	return result[:n]
+	return result
 }

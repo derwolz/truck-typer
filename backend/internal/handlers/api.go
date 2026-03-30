@@ -126,12 +126,12 @@ func Words(w http.ResponseWriter, r *http.Request) {
 }
 
 func Sentences(w http.ResponseWriter, r *http.Request) {
-	count := 200
-	if n, err := strconv.Atoi(r.URL.Query().Get("count")); err == nil && n > 0 && n <= 500 {
+	count := 50
+	if n, err := strconv.Atoi(r.URL.Query().Get("count")); err == nil && n > 0 && n <= 200 {
 		count = n
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string][]string{"words": words.RandomSentenceWords(count)})
+	json.NewEncoder(w).Encode(map[string][]string{"words": words.RandomSentences(count)})
 }
 
 func GetLeaderboard(w http.ResponseWriter, r *http.Request) {

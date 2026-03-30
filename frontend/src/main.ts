@@ -73,36 +73,41 @@ window.addEventListener('focus',     () => { /* require click again */ })
 // ---------------------------------------------------------------------------
 // Word / sentence fetching
 // ---------------------------------------------------------------------------
-async function fetchWords(count = 200): Promise<string[]> {
-  const mode    = settings.current.mode
-  const api     = mode === 'sentences' ? '/api/sentences' : '/api/words'
-  const res     = await fetch(`${api}?count=${count}`)
+async function fetchWords(): Promise<string[]> {
+  const mode = settings.current.mode
+  const isSentences = mode === 'sentences'
+  const api   = isSentences ? '/api/sentences' : '/api/words'
+  const count = isSentences ? 50 : 200
+  const res   = await fetch(`${api}?count=${count}`)
   if (!res.ok) throw new Error(`${res.status}`)
-  const data    = await res.json() as { words: string[] }
+  const data  = await res.json() as { words: string[] }
   return data.words
 }
 
 async function loadInitial() {
-  const words = await fetchWords(200)
+  const words = await fetchWords()
   cylinder.init(words)
   phase = 'idle'
   splash.style.display = 'flex'
 }
 
 function refillCheck() {
-  if (cylinder.queueLength() < 40) {
-    fetchWords(200)
+  const threshold = settings.current.mode === 'sentences' ? 10 : 40
+  if (cylinder.queueLength() < threshold) {
+    fetchWords()
       .then(w => cylinder.enqueueWords(w))
       .catch(console.error)
   }
 }
 
 // ---------------------------------------------------------------------------
-// Settings change — restart if mid-game to avoid mixed-mode word queue
+// Settings change — reload words when idle so new mode takes effect immediately
 // ---------------------------------------------------------------------------
 function onSettingsChange(_v: SettingsValues) {
   if (phase === 'playing' || phase === 'loading') return
-  // refetch with the new mode when next game starts
+  phase = 'loading'
+  cylinder.hide()
+  loadInitial().catch(console.error)
 }
 
 // ---------------------------------------------------------------------------
@@ -148,9 +153,28 @@ function handleKey(e: KeyboardEvent) {
     return
   }
 
+  const isSentences = settings.current.mode === 'sentences'
+
   if (e.key === ' ' || e.key === 'Enter') {
     e.preventDefault()
-    if (currentInput.length > 0) confirmWord()
+    // In sentences mode, space is a typeable character (part of the sentence).
+    // Enter always confirms; space only confirms in words mode.
+    if (isSentences && e.key === ' ') {
+      const pos    = currentInput.length
+      const target = cylinder.currentWord()
+      const correct = target[pos] === ' '
+      currentInput += ' '
+      stats.start()
+      stats.recordChar(correct)
+      if (!correct) {
+        const ox = window.innerWidth  * 0.55
+        const oy = window.innerHeight * 0.67
+        physics.spawnChar(' ', ox, oy, '#c33')
+      }
+      syncCylinder()
+    } else {
+      if (currentInput.length > 0) confirmWord()
+    }
     return
   }
 
@@ -173,6 +197,11 @@ function handleKey(e: KeyboardEvent) {
     }
 
     syncCylinder()
+
+    // In sentences mode, auto-advance when the sentence is fully typed correctly.
+    if (isSentences && currentInput === target) {
+      confirmWord()
+    }
   }
 }
 
